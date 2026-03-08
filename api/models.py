@@ -100,6 +100,7 @@ class Inventory(models.Model):
     products = models.JSONField(default=dict, blank=True)
 
     def clean(self):
+        from .models import AlbumEntry
         for seed in self.seeds:
             if seed not in AlbumEntry.objects.filter(user=self.user).values_list('plant__scientificName', flat=True):
                 raise ValidationError(f"Seed '{seed}' is not in the user's album.")
@@ -183,7 +184,7 @@ class PlantInGarden(models.Model):
     growthPhase = models.CharField(max_length=50, choices=GrowthState.choices, default=GrowthState.SEED)
     healthLevel = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])  # RT.11
     waterLevel = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])  # RT.11
-    lastWateredAt = models.DateTimeField()
+    lastWateredAt = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ('pot', 'plant', 'plantedAt')
