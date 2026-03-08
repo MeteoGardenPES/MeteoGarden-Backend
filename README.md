@@ -46,3 +46,60 @@ All files changed by isort & black must be commited & pushed.
 All errors found by flake8 must be solved, commited and pushed. The output of flake8 command should be 0.
 
 Once all of this is done, the pipeline should pass!
+
+## Setup your local environment
+### 1) Create and activate a virtual environment
+#### Windows
+
+```bash
+python -m venv.venv
+.venv\Scripts\Activate.ps1
+```
+
+#### macOs / Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 2) Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3) Create your local environment file
+Create a `.env` file at the project root.
+Copy the .env.example file
+
+### 4) Create the PostgreSQL database/user locally
+Make sure PostgreSQL is running.
+
+Using `psql`:
+```sql
+CREATE USER meteogarden WITH PASSWORD 'meteodb';
+CREATE DATABASE meteogarden OWNER meteogarden;
+GRANT ALL PRIVILEGES ON DATABASE meteogarden TO meteogarden;
+```
+
+### 5) Apply migrations
+```bash
+python manage.py migrate
+```
+
+### 6) Run the development server
+```bash
+python manage.py runserver
+```
+
+The server will start at:
+- http://127.0.0.1:8000/
+
+### 7) Test the API
+Open in your browser:
+- http://127.0.0.1:8000/api/health/
+
+Expected response:
+```json
+{"status":"ok"}
+```
