@@ -6,12 +6,12 @@ from django.utils import timezone
 
 # Enumerations
 class GrowthState(models.TextChoices):
-    SEED = 'seed', 'Seed'
-    GERMINATION = 'germination', 'Germination'
-    GROWTH = 'growth', 'Growth'
-    MATURE = 'mature', 'Mature'
-    FLOWERING = 'flowering', 'Flowering'
-    DEAD = 'dead', 'Dead'
+    SEED = "seed", "Seed"
+    GERMINATION = "germination", "Germination"
+    GROWTH = "growth", "Growth"
+    MATURE = "mature", "Mature"
+    FLOWERING = "flowering", "Flowering"
+    DEAD = "dead", "Dead"
 
 
 class AvatarExpression(models.TextChoices):
@@ -29,9 +29,9 @@ class MissionState(models.TextChoices):
 
 
 class LanguageType(models.TextChoices):
-    CATALAN = 'catalan', 'Catalan'
-    SPANISH = 'spanish', 'Spanish'
-    ENGLISH = 'english', 'English'
+    CATALAN = "catalan", "Catalan"
+    SPANISH = "spanish", "Spanish"
+    ENGLISH = "english", "English"
 
 
 # Main classes
@@ -45,7 +45,9 @@ class Plant(models.Model):
 
     def clean(self):
         if self.minTemperature >= self.maxTemperature:
-            raise ValidationError("The minimum temperature must be lower than the maximum temperature.")
+            raise ValidationError(
+                "The minimum temperature must be lower than the maximum temperature."
+            )
 
     def __str__(self):
         return self.scientificName
@@ -56,20 +58,24 @@ class User(models.Model):
     password = models.CharField(max_length=50)
     email = models.EmailField(unique=True)  # RT.14
     city = models.CharField(max_length=50)
-    language = models.CharField(max_length=50, choices=LanguageType.choices, default=LanguageType.CATALAN)
+    language = models.CharField(
+        max_length=50, choices=LanguageType.choices, default=LanguageType.CATALAN
+    )
     lastEntry = models.DateTimeField(auto_now=True)
     numPlantsCollected = models.PositiveIntegerField(default=0)
 
     @property
     def numPlantsUnlocked(self):
         return self.albumentry_set.count()
-    
+
     def __str__(self):
         return self.username
 
 
 class Avatar(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)  # RT.1
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, primary_key=True
+    )  # RT.1
     body = models.CharField(max_length=50)
     skinTone = models.CharField(max_length=50)
     eyeColor = models.CharField(max_length=50)
@@ -95,21 +101,28 @@ class Avatar(models.Model):
 
 
 class Inventory(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)  # RT.1
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, primary_key=True
+    )  # RT.1
     coins = models.PositiveIntegerField(default=5)  # All users start with 5 coins
     seeds = models.JSONField(default=dict, blank=True)
     products = models.JSONField(default=dict, blank=True)
 
     def clean(self):
         from .models import AlbumEntry
+
         for seed in self.seeds:
-            if seed not in AlbumEntry.objects.filter(user=self.user).values_list('plant__scientificName', flat=True):
+            if seed not in AlbumEntry.objects.filter(user=self.user).values_list(
+                "plant__scientificName", flat=True
+            ):
                 raise ValidationError(f"Seed '{seed}' is not in the user's album.")
 
     def addSeed(self, scientificName, quantity):
         if quantity < 0:  # RT.6
             raise ValueError("Quantity cannot be negative")
-        if not AlbumEntry.objects.filter(user=self.user, plant__scientificName=scientificName).exists():  # RT.13
+        if not AlbumEntry.objects.filter(
+            user=self.user, plant__scientificName=scientificName
+        ).exists():  # RT.13
             raise ValueError(f"Plant '{scientificName}' is not in the user's album.")
         self.seeds[scientificName] = self.seeds.get(scientificName, 0) + quantity
         self.save()
@@ -117,54 +130,58 @@ class Inventory(models.Model):
     def addProduct(self, productName, quantity):
         if quantity < 0:  # RT.6
             raise ValueError("Quantity cannot be negative")
-        
+
         self.products[productName] = self.products.get(productName, 0) + quantity
         self.save()
 
     def removeSeed(self, scientificName, quantity):
         current = self.seeds.get(scientificName, 0)
         if quantity > current:
-            raise ValueError(f"Cannot remove {quantity} seeds of '{scientificName}': only {current} availeble.")
+            raise ValueError(
+                f"Cannot remove {quantity} seeds of '{scientificName}': only {current} availeble."
+            )
         self.seeds[scientificName] = current - quantity
-        if self.seeds[scientificName] == 0: 
+        if self.seeds[scientificName] == 0:
             del self.seeds[scientificName]
         self.save()
 
     def removeProduct(self, productName, quantity):
         current = self.products.get(productName, 0)
         if quantity > current:
-            raise ValueError(f"Cannot remove {quantity} products of '{productName}': only {current} availeble.")
+            raise ValueError(
+                f"Cannot remove {quantity} products of '{productName}': only {current} availeble."
+            )
         self.products[productName] = current - quantity
-        if self.products[productName] == 0: 
+        if self.products[productName] == 0:
             del self.products[productName]
         self.save()
 
     def __str__(self):
         return self.user.username
-    
+
 
 class Garden(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # RT.1
     name = models.CharField(max_length=100)
 
     class Meta:
-        unique_together = ('user', 'name')
+        unique_together = ("user", "name")
 
     @property
     def availablePots(self):
         totalPots = self.pot_set.count()
         occupied = self.pot_set.filter(occupied=True).count()
         return totalPots - occupied
-    
+
     def rename(self, new_name):
         if Garden.objects.filter(user=self.user, name=new_name).exists():
             raise ValidationError("You already have a garden with this name.")
         self.name = new_name
         self.save()
-    
+
     def __str__(self):
         return f"Garden {self.name} of {self.user.username}"
-    
+
 
 class Pot(models.Model):
     garden = models.ForeignKey(Garden, on_delete=models.CASCADE)
@@ -172,29 +189,41 @@ class Pot(models.Model):
     occupied = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('garden', 'number')
+        unique_together = ("garden", "number")
 
     def __str__(self):
         return f"Pot {self.number} ({self.garden.name})"
-    
+
 
 class PlantInGarden(models.Model):
     pot = models.OneToOneField(Pot, on_delete=models.CASCADE)
     plant = models.ForeignKey(Plant, on_delete=models.CASCADE)
     plantedAt = models.DateTimeField(default=timezone.now)
-    growthPhase = models.CharField(max_length=50, choices=GrowthState.choices, default=GrowthState.SEED)
-    healthLevel = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])  # RT.11
-    waterLevel = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])  # RT.11
+    growthPhase = models.CharField(
+        max_length=50, choices=GrowthState.choices, default=GrowthState.SEED
+    )
+    healthLevel = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
+    )  # RT.11
+    waterLevel = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
+    )  # RT.11
     lastWateredAt = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        unique_together = ('pot', 'plant', 'plantedAt')
+        unique_together = ("pot", "plant", "plantedAt")
 
     def clean(self):
-        if self.growthPhase == GrowthState.FLOWERING and not self.plant.canFlower: # RT.2: No flowering if canFlower is false
+        if (
+            self.growthPhase == GrowthState.FLOWERING and not self.plant.canFlower
+        ):  # RT.2: No flowering if canFlower is false
             raise ValidationError("This plant cannot flower.")
-        if self.lastWateredAt < self.plantedAt: # RT.10: Last watered time after planting time
-            raise ValidationError("The last watered date/time must be after the planting date/time.")
+        if (
+            self.lastWateredAt < self.plantedAt
+        ):  # RT.10: Last watered time after planting time
+            raise ValidationError(
+                "The last watered date/time must be after the planting date/time."
+            )
 
     def save(self, *args, **kwargs):
         # RT.3: If a PlantInGarden is created, the pot becomes occupied
@@ -205,7 +234,7 @@ class PlantInGarden(models.Model):
     def update(self, health=None, water=None, phase=None):
         if health is not None:
             self.healthLevel = health
-        if water is not None:   
+        if water is not None:
             self.waterLevel = water
             self.lastWateredAt = timezone.now()
         if phase is not None:
@@ -220,15 +249,19 @@ class PlantInGarden(models.Model):
 
 
 class FriendRequest(models.Model):
-    requester = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
-    requested = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+    requester = models.ForeignKey(
+        User, related_name="sent_requests", on_delete=models.CASCADE
+    )
+    requested = models.ForeignKey(
+        User, related_name="received_requests", on_delete=models.CASCADE
+    )
     accepted = models.BooleanField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('requester', 'requested')
+        unique_together = ("requester", "requested")
 
     def clean(self):
-        if self.requester == self.requested: # RT.4: No request to oneself
+        if self.requester == self.requested:  # RT.4: No request to oneself
             raise ValidationError("You cannot send a friend request to yourself.")
 
     def accept(self):
@@ -239,6 +272,7 @@ class FriendRequest(models.Model):
         self.accepted = False
         self.save()
 
+
 class AlbumEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     plant = models.ForeignKey(Plant, on_delete=models.CASCADE)
@@ -246,11 +280,13 @@ class AlbumEntry(models.Model):
     description = models.TextField()
 
     class Meta:
-        unique_together = ('user', 'plant')
+        unique_together = ("user", "plant")
 
     def clean(self):
-        if self.discoveryDate > self.user.lastEntry.date(): 
-            raise ValidationError("The discovery date cannot be after the user's last entry date.")
+        if self.discoveryDate > self.user.lastEntry.date():
+            raise ValidationError(
+                "The discovery date cannot be after the user's last entry date."
+            )
 
 
 class Image(models.Model):
@@ -262,7 +298,7 @@ class Image(models.Model):
 
     def __str__(self):
         return f"Image of {self.plant.scientificName} by {self.uploader.username}"
-    
+
 
 class Mission(models.Model):
     name = models.CharField(max_length=50, primary_key=True)  # RT.1
@@ -273,7 +309,7 @@ class Mission(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 
 class UserMission(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -282,7 +318,7 @@ class UserMission(models.Model):
     acquiredAt = models.DateTimeField()
 
     class Meta:
-        unique_together = ('user', 'mission')
+        unique_together = ("user", "mission")
 
 
 class Station(models.Model):
@@ -302,15 +338,15 @@ class Shop(models.Model):
     products = models.JSONField(default=dict, blank=True)
 
     def update_stock(self, item_type, name, price):
-        if item_type == 'seed':
+        if item_type == "seed":
             self.seeds[name] = price
-        elif item_type == 'product':
+        elif item_type == "product":
             self.products[name] = price
         self.save()
 
     def remove_item(self, item_type, name):
-        if item_type == 'seed' and name in self.seeds:
+        if item_type == "seed" and name in self.seeds:
             del self.seeds[name]
-        elif item_type == 'product' and name in self.products:
+        elif item_type == "product" and name in self.products:
             del self.products[name]
         self.save()

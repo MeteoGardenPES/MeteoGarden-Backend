@@ -5,8 +5,7 @@ from rest_framework.response import Response
 
 
 # Create your views here.
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([AllowAny])
 def health(request):
-    return Response({'health status': 'ok'})
-
+    return Response({"health status": "ok"})
