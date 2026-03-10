@@ -52,7 +52,7 @@ Once all of this is done, the pipeline should pass!
 #### Windows
 
 ```bash
-python -m venv.venv
+python -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
