@@ -72,3 +72,30 @@ def user_gardens(request, username):
     ]
 
     return JsonResponse(data, safe=False)
+
+
+def plant_status(request, username, garden_name, pot_number):
+    garden = get_object_or_404(Garden, user__username=username, name=garden_name)
+
+    pot = get_object_or_404(Pot, garden=garden, number=pot_number)
+
+    planting = getattr(pot, "plantingarden", None)
+
+    if planting is None:
+        data = {"pot_number": pot.number, "plant": None}
+    else:
+        data = {
+            "pot_number": pot.number,
+            "plant": {
+                "scientific_name": planting.plant.scientificName,
+                "common_name": planting.plant.commonName,
+                "family": planting.plant.family,
+            },
+            "growth_phase": planting.growthPhase,
+            "health_level": planting.healthLevel,
+            "water_level": planting.waterLevel,
+            "planted_at": planting.plantedAt.isoformat(),
+            "last_watered_at": planting.lastWateredAt.isoformat(),
+        }
+
+    return JsonResponse(data)

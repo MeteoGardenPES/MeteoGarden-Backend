@@ -16,6 +16,11 @@ urlpatterns = [
         garden_plants,
         name="garden-plants",
     ),
+    path(
+        "users/<str:username>/gardens/<str:garden_name>/pots/<int:pot_number>/plant/",
+        plant_status,
+        name="plant_status",
+    ),
     path("health/", health),
     path("weather/current/", current_weather),
     path("stations/", get_stations),
