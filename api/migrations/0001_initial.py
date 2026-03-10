@@ -18,8 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "username",
-                    models.CharField(max_length=50, primary_key=True,
-                                     serialize=False),
+                    models.CharField(max_length=50, primary_key=True, serialize=False),
                 ),
                 ("password", models.CharField(max_length=50)),
                 ("email", models.EmailField(max_length=254, unique=True)),
@@ -45,8 +44,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "scientificName",
-                    models.CharField(max_length=100, primary_key=True,
-                                     serialize=False),
+                    models.CharField(max_length=100, primary_key=True, serialize=False),
                 ),
                 ("commonName", models.CharField(max_length=100)),
                 ("family", models.CharField(max_length=100)),
@@ -54,8 +52,7 @@ class Migration(migrations.Migration):
                 (
                     "minTemperature",
                     models.FloatField(
-                        validators=[
-                            django.core.validators.MinValueValidator(0.0)]
+                        validators=[django.core.validators.MinValueValidator(0.0)]
                     ),
                 ),
                 ("maxTemperature", models.FloatField()),
@@ -82,8 +79,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "stationCode",
-                    models.CharField(max_length=4, primary_key=True,
-                                     serialize=False),
+                    models.CharField(max_length=4, primary_key=True, serialize=False),
                 ),
                 ("station", models.CharField(max_length=50)),
                 ("city", models.CharField(max_length=50)),
@@ -92,22 +88,19 @@ class Migration(migrations.Migration):
                 (
                     "windSpeed",
                     models.FloatField(
-                        validators=[
-                            django.core.validators.MinValueValidator(0.0)]
+                        validators=[django.core.validators.MinValueValidator(0.0)]
                     ),
                 ),
                 (
                     "relativeHumidity",
                     models.FloatField(
-                        validators=[
-                            django.core.validators.MinValueValidator(0.0)]
+                        validators=[django.core.validators.MinValueValidator(0.0)]
                     ),
                 ),
                 (
                     "precipitation",
                     models.FloatField(
-                        validators=[
-                            django.core.validators.MinValueValidator(0.0)]
+                        validators=[django.core.validators.MinValueValidator(0.0)]
                     ),
                 ),
                 ("updateDate", models.DateTimeField(auto_now=True)),
@@ -181,8 +174,7 @@ class Migration(migrations.Migration):
                 (
                     "user",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.user"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.user"
                     ),
                 ),
             ],
@@ -195,8 +187,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "name",
-                    models.CharField(max_length=50, primary_key=True,
-                                     serialize=False),
+                    models.CharField(max_length=50, primary_key=True, serialize=False),
                 ),
                 ("description", models.TextField()),
                 ("rewardCoins", models.PositiveIntegerField()),
@@ -204,8 +195,7 @@ class Migration(migrations.Migration):
                 (
                     "seed",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.plant"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.plant"
                     ),
                 ),
             ],
@@ -219,15 +209,13 @@ class Migration(migrations.Migration):
                 (
                     "uploader",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.user"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.user"
                     ),
                 ),
                 (
                     "plant",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.plant"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.plant"
                     ),
                 ),
             ],
@@ -249,8 +237,7 @@ class Migration(migrations.Migration):
                 (
                     "garden",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.garden"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.garden"
                     ),
                 ),
             ],
@@ -304,21 +291,18 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("discoveryDate", models.DateField(
-                    default=django.utils.timezone.now)),
+                ("discoveryDate", models.DateField(default=django.utils.timezone.now)),
                 ("description", models.TextField()),
                 (
                     "user",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.user"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.user"
                     ),
                 ),
                 (
                     "plant",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.plant"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.plant"
                     ),
                 ),
             ],
@@ -338,8 +322,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("plantedAt", models.DateTimeField(
-                    default=django.utils.timezone.now)),
+                ("plantedAt", models.DateTimeField(default=django.utils.timezone.now)),
                 (
                     "growthPhase",
                     models.CharField(
@@ -380,15 +363,13 @@ class Migration(migrations.Migration):
                 (
                     "plant",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.plant"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.plant"
                     ),
                 ),
                 (
                     "pot",
                     models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.pot"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.pot"
                     ),
                 ),
             ],
@@ -423,15 +404,13 @@ class Migration(migrations.Migration):
                 (
                     "mission",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.mission"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.mission"
                     ),
                 ),
                 (
                     "user",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="api.user"
+                        on_delete=django.db.models.deletion.CASCADE, to="api.user"
                     ),
                 ),
             ],
