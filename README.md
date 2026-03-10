@@ -32,6 +32,10 @@ git push -u origin feature/<short-name>
 ```
 
 ## Format code for CI/CD pipeline
+Install linting dependencies:
+```bash
+pip install -r cicd-requirements.txt
+```
 
 One of the steps of the CI/CD pipeline is the linting & styling step. To format the code to pass this step, you must run the following commands:
 ```bash
