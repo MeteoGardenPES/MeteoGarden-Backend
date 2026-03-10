@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-from .models import Garden, Pot
+from .models import Garden, Pot, User
 
 
 def garden_plants(request, username, garden_name):
@@ -55,5 +55,20 @@ def garden_plants(request, username, garden_name):
                     "last_watered_at": planting.lastWateredAt.isoformat(),
                 }
             )
+
+    return JsonResponse(data, safe=False)
+
+
+def user_gardens(request, username):
+    user = get_object_or_404(User, username=username)
+
+    gardens = Garden.objects.filter(user=user).order_by("name")
+
+    data = [
+        {
+            "name": garden.name,
+        }
+        for garden in gardens
+    ]
 
     return JsonResponse(data, safe=False)
