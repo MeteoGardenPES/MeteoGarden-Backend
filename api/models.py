@@ -40,15 +40,15 @@ class Plant(models.Model):
     commonName = models.CharField(max_length=100)
     family = models.CharField(max_length=100)
     canFlower = models.BooleanField(default=False)
-    minTemperature = models.FloatField(
-        validators=[MinValueValidator(0.0)])  # RT.6
+    minTemperature = models.FloatField(validators=[MinValueValidator(0.0)])  # RT.6
     maxTemperature = models.FloatField()  # RT.6
 
     def clean(self):
         if self.minTemperature >= self.maxTemperature:
             raise ValidationError(
                 "The minimum temperature must be lower "
-                "than the " "maximum temperature."
+                "than the "
+                "maximum temperature."
             )
 
     def __str__(self):
@@ -61,8 +61,7 @@ class User(models.Model):
     email = models.EmailField(unique=True)  # RT.14
     city = models.CharField(max_length=50)
     language = models.CharField(
-        max_length=50, choices=LanguageType.choices,
-        default=LanguageType.CATALAN
+        max_length=50, choices=LanguageType.choices, default=LanguageType.CATALAN
     )
     lastEntry = models.DateTimeField(auto_now=True)
     numPlantsCollected = models.PositiveIntegerField(default=0)
@@ -82,8 +81,7 @@ class Avatar(models.Model):
     body = models.CharField(max_length=50)
     skinTone = models.CharField(max_length=50)
     eyeColor = models.CharField(max_length=50)
-    expression = models.CharField(max_length=50,
-                                  choices=AvatarExpression.choices)
+    expression = models.CharField(max_length=50, choices=AvatarExpression.choices)
     hairColor = models.CharField(max_length=50)
     hairStyle = models.CharField(max_length=50)
     facialHair = models.CharField(max_length=50, blank=True)
@@ -117,10 +115,10 @@ class Inventory(models.Model):
         from .models import AlbumEntry
 
         for seed in self.seeds:
-            if (seed not in AlbumEntry.objects.filter(user=self.user).
-                    values_list("plant__scientificName", flat=True)):
-                raise (ValidationError
-                       (f"Seed '{seed}' is not in the user's album."))
+            if seed not in AlbumEntry.objects.filter(user=self.user).values_list(
+                "plant__scientificName", flat=True
+            ):
+                raise (ValidationError(f"Seed '{seed}' is not in the user's album."))
 
     def addSeed(self, scientificName, quantity):
         if quantity < 0:  # RT.6
@@ -128,18 +126,15 @@ class Inventory(models.Model):
         if not AlbumEntry.objects.filter(
             user=self.user, plant__scientificName=scientificName
         ).exists():  # RT.13
-            raise ValueError(
-                f"Plant '{scientificName}' is not in the user's album.")
-        self.seeds[scientificName] = (self.seeds.get(scientificName, 0)
-                                      + quantity)
+            raise ValueError(f"Plant '{scientificName}' is not in the user's album.")
+        self.seeds[scientificName] = self.seeds.get(scientificName, 0) + quantity
         self.save()
 
     def addProduct(self, productName, quantity):
         if quantity < 0:  # RT.6
             raise ValueError("Quantity cannot be negative")
 
-        self.products[productName] = (self.products.get(productName, 0)
-                                      + quantity)
+        self.products[productName] = self.products.get(productName, 0) + quantity
         self.save()
 
     def removeSeed(self, scientificName, quantity):
@@ -225,16 +220,14 @@ class PlantInGarden(models.Model):
 
     def clean(self):
         if (
-            self.growthPhase == GrowthState.FLOWERING and
-                not self.plant.canFlower
+            self.growthPhase == GrowthState.FLOWERING and not self.plant.canFlower
         ):  # RT.2: No flowering if canFlower is false
             raise ValidationError("This plant cannot flower.")
         if (
             self.lastWateredAt < self.plantedAt
         ):  # RT.10: Last watered time after planting time
             raise ValidationError(
-                "The last watered date/time must be after "
-                "the planting " "date/time."
+                "The last watered date/time must be after " "the planting " "date/time."
             )
 
     def save(self, *args, **kwargs):
@@ -274,8 +267,7 @@ class FriendRequest(models.Model):
 
     def clean(self):
         if self.requester == self.requested:  # RT.4: No request to oneself
-            raise ValidationError(
-                "You cannot send a friend request to yourself.")
+            raise ValidationError("You cannot send a friend request to yourself.")
 
     def accept(self):
         self.accepted = True
@@ -297,8 +289,9 @@ class AlbumEntry(models.Model):
 
     def clean(self):
         if self.discoveryDate > self.user.lastEntry.date():
-            raise ValidationError("The discovery date cannot be after "
-                                  "the user's last entry date.")
+            raise ValidationError(
+                "The discovery date cannot be after " "the user's last entry date."
+            )
 
 
 class Image(models.Model):
@@ -309,8 +302,7 @@ class Image(models.Model):
     height = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"Image of {self.plant.scientificName} by " \
-               f"{self.uploader.username}"
+        return f"Image of {self.plant.scientificName} by " f"{self.uploader.username}"
 
 
 class Mission(models.Model):
@@ -327,8 +319,7 @@ class Mission(models.Model):
 class UserMission(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
-    missionState = models.CharField(max_length=50,
-                                    choices=MissionState.choices)
+    missionState = models.CharField(max_length=50, choices=MissionState.choices)
     acquiredAt = models.DateTimeField()
 
     class Meta:
