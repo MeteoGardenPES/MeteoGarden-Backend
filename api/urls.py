@@ -1,12 +1,11 @@
 """
 URL configuration for api.
 """
-from django import views
+
 # from django.contrib import admin
 from django.urls import path
-from .views import importPlant
 
-from .views import health
+from .views import health, importPlant
 
 urlpatterns = [
     path("health/", health),
