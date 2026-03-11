@@ -42,6 +42,7 @@ class Plant(models.Model):
     canFlower = models.BooleanField(default=False)
     minTemperature = models.FloatField(validators=[MinValueValidator(0.0)])  # RT.6
     maxTemperature = models.FloatField()  # RT.6
+    description = models.TextField(null=True)
 
     def clean(self):
         if self.minTemperature >= self.maxTemperature:
