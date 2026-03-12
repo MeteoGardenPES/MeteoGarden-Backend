@@ -5,7 +5,7 @@ URL configuration for api.
 # from django.contrib import admin
 from django.urls import path
 
-from .views import health, current_weather, get_stations
+from .views import current_weather, get_stations, health
 
 urlpatterns = [
     path("health/", health),
