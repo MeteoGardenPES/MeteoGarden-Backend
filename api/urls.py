@@ -5,8 +5,13 @@ URL configuration for api.
 # from django.contrib import admin
 from django.urls import path
 
+from api.views.views_visualitzarJardi import (
+    garden_plants,
+    plant_status,
+    user_gardens,
+    water_plant,
+)
 from .views import garden_plants, user_gardens
-from .views import garden_plants
 from .views import current_weather, get_stations, health
 
 urlpatterns = [
