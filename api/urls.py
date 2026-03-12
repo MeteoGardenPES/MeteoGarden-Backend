@@ -24,4 +24,9 @@ urlpatterns = [
     path("health/", health),
     path("weather/current/", current_weather),
     path("stations/", get_stations),
+    path(
+        "users/<str:username>/gardens/<str:garden_name>/pots/<int:pot_number>/water/",
+        water_plant,
+        name="water_plant",
+    ),
 ]

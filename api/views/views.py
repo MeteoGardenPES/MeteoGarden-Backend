@@ -1,8 +1,10 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from .models import Garden, Pot, User
 
+from django.views.decorators.csrf import csrf_exempt
 
 def garden_plants(request, username, garden_name):
     garden = get_object_or_404(
@@ -99,3 +101,46 @@ def plant_status(request, username, garden_name, pot_number):
         }
 
     return JsonResponse(data)
+@csrf_exempt
+def water_plant(request, username, garden_name, pot_number):
+    if request.method != "PATCH":
+        return HttpResponseNotAllowed(["PATCH"])
+
+    garden = get_object_or_404(
+        Garden,
+        user__username=username,
+        name=garden_name,
+    )
+
+    pot = get_object_or_404(
+        Pot,
+        garden=garden,
+        number=pot_number,
+    )
+
+    planting = getattr(pot, "plantingarden", None)
+
+    if planting is None:
+        return JsonResponse(
+            {"error": "There is no plant in this pot."},
+            status=404,
+        )
+
+    planting.waterLevel = 100.0
+    planting.healthLevel = min(100.0, planting.healthLevel + 5.0)
+    planting.lastWateredAt = timezone.now()
+    planting.save()
+
+    data = {
+        "message": "Plant watered successfully.",
+        "pot_number": pot.number,
+        "plant": {
+            "scientific_name": planting.plant.scientificName,
+            "common_name": planting.plant.commonName,
+        },
+        "water_level": planting.waterLevel,
+        "health_level": planting.healthLevel,
+        "last_watered_at": planting.lastWateredAt.isoformat(),
+    }
+
+    return JsonResponse(data, status=200)
