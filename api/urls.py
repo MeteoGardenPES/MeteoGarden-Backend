@@ -7,8 +7,9 @@ from django.urls import path
 
 from api.views.views_visualitzarJardi import plant_status, water_plant
 
-from .views import (current_weather, garden_plants, get_stations,
-                    user_gardens)
+from api.views.views_visualitzarJardi import plant_status, water_plant
+
+from .views import current_weather, garden_plants, get_stations, user_gardens
 
 urlpatterns = [
     path("users/<str:username>/gardens/", user_gardens, name="user_gardens"),
