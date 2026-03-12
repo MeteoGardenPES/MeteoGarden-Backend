@@ -5,14 +5,9 @@ URL configuration for api.
 # from django.contrib import admin
 from django.urls import path
 
-from api.views.views_visualitzarJardi import (
-    garden_plants,
-    plant_status,
-    user_gardens,
-    water_plant,
-)
-from .views import garden_plants, user_gardens
-from .views import current_weather, get_stations, health
+from api.views.views_visualitzarJardi import plant_status, water_plant
+
+from .views import current_weather, garden_plants, get_stations, health, user_gardens
 
 urlpatterns = [
     path("users/<str:username>/gardens/", user_gardens, name="user_gardens"),
