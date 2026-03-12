@@ -18,7 +18,7 @@ def health(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
-    User.objects.create_user(
+    user = User.objects.create_user(
         username=request.data["username"],
         password=request.data["password"],
         email=request.data["email"],
@@ -26,7 +26,8 @@ def register(request):
         language=request.data["language"],
         numPlantsCollected=0,
     )
-    return Response({"message": "User created"})
+    token, created = Token.objects.get_or_create(user=user)
+    return Response({"token": token.key, "message": "User created"})
 
 
 # Login view
@@ -54,6 +55,7 @@ def get_profile(request):
             "username": user.username,
             "email": user.email,
             "city": user.city,
+            "codi_estacio": user.codi_estacio,
             "language": user.language,
             "lastEntry": user.lastEntry,
             "numPlantsCollected": user.numPlantsCollected,

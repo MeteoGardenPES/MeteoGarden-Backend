@@ -1,7 +1,9 @@
 """
 URL configuration for api.
 """
+
 from django.urls import path
+
 from .views import edit_profile, get_profile, health, login, register
 
 """
