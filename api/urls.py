@@ -9,5 +9,5 @@ from .views import health, importPlant
 
 urlpatterns = [
     path("health/", health),
-    path("plants/import/", importPlant, name="importPlant"),
+    path("plants/info/", importPlant, name="importPlant"),
 ]
