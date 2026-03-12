@@ -7,8 +7,6 @@ from django.urls import path
 
 from api.views.views_visualitzarJardi import plant_status, water_plant
 
-from api.views.views_visualitzarJardi import plant_status, water_plant
-
 from .views import current_weather, garden_plants, get_stations, user_gardens
 
 urlpatterns = [
