@@ -7,7 +7,8 @@ from django.urls import path
 
 from api.views.views_visualitzarJardi import plant_status, water_plant
 
-from .views import current_weather, garden_plants, get_stations, health, user_gardens
+from .views import (current_weather, garden_plants, get_stations,
+                    user_gardens)
 
 urlpatterns = [
     path("users/<str:username>/gardens/", user_gardens, name="user_gardens"),
@@ -21,7 +22,6 @@ urlpatterns = [
         plant_status,
         name="plant_status",
     ),
-    path("health/", health),
     path("weather/current/", current_weather),
     path("stations/", get_stations),
     path(
