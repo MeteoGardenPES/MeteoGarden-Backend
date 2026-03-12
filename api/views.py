@@ -1,11 +1,13 @@
 # from django.shortcuts import render
-from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
-from .models import Plant, Image, User
-from django.conf import settings
 import requests
+from django.conf import settings
+from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from .models import Image, Plant, User
+
 
 # Create your views here.
 @api_view(["GET"])
@@ -15,7 +17,7 @@ def health(request):
 
 
 PLANTNET_URL = "https://my-api.plantnet.org/v2/identify/all"
-ALLOWED_ORGANS = {"leaf", "flower", "fruit"}
+ALLOWED_ORGANS = {"leaf", "flower"}
 
 
 @api_view(["POST"])
@@ -41,7 +43,11 @@ def identifyAndSavePlant(request):
         return Response({"detail": "PLANTNET_API_KEY is not configured."}, status=500)
 
     files = {
-        "images": (file_obj.name, file_obj, file_obj.content_type or "application/octet-stream")
+        "images": (
+            file_obj.name,
+            file_obj,
+            file_obj.content_type or "application/octet-stream",
+        )
     }
 
     r = requests.post(
@@ -53,7 +59,11 @@ def identifyAndSavePlant(request):
 
     if r.status_code != 200:
         return Response(
-            {"detail": "PlantNet identification failed.", "status_code": r.status_code, "body": r.text[:500]},
+            {
+                "detail": "PlantNet identification failed.",
+                "status_code": r.status_code,
+                "body": r.text[:500],
+            },
             status=502,
         )
 
@@ -64,39 +74,19 @@ def identifyAndSavePlant(request):
         return Response({"detail": "No identification results."}, status=422)
 
     best = results[0]
-    species = (best.get("species") or {})
-    scientificName = species.get("scientificNameWithoutAuthor") or species.get("scientificName")
+    species = best.get("species") or {}
+    scientificName = species.get("scientificNameWithoutAuthor") or species.get(
+        "scientificName"
+    )
     commonNames = species.get("commonNames") or []
 
     if not scientificName:
-        return Response({"detail": "PlantNet response missing scientific name."}, status=422)
+        return Response(
+            {"detail": "PlantNet response missing scientific name."}, status=422
+        )
 
     common_name = commonNames[0] if commonNames else scientificName
 
-
-    plant, created = Plant.objects.get_or_create(
-        scientificName=scientificName,
-        defaults={
-            "commonName": common_name,
-            "family": (species.get("family") or {}).get("scientificName", "") if isinstance(species.get("family"), dict) else "",
-            "canFlower": False,
-            "minTemperature": 0.0,
-            "maxTemperature": 50.0,
-        },
-    )
-
-    if not created:
-        changed = False
-        if not plant.commonName and common_name:
-            plant.commonName = common_name
-            changed = True
-        if not plant.family:
-            fam = (species.get("family") or {})
-            if isinstance(fam, dict) and fam.get("scientificName"):
-                plant.family = fam["scientificName"]
-                changed = True
-        if changed:
-            plant.save()
 
     uploader = None
     if username:
@@ -108,7 +98,7 @@ def identifyAndSavePlant(request):
     img = Image.objects.create(
         uploader=uploader,
         url=file_obj,
-        plant= plant,
+        plant=None,
     )
 
     return Response(
