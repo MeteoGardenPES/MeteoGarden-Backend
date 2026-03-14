@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +30,7 @@ SECRET_KEY = "django-insecure-(^xlz*9rn!e=qns@k$j!3==^%k1n_=#_t3l5ks&!$xt$cipvcz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -40,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "drf_spectacular",
+    "storages",
     # METEOGARDEN APPS
     "api",
 ]
@@ -106,6 +111,17 @@ REST_FRAMEWORK = {
     # "EXCEPTION_HANDLER": ".exceptions.common_exception_handler",
 }
 
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID = os.getenv("AWS_S3_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_S3_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = "meteogarden-images"
+AWS_S3_REGION_NAME = "eu-south-2"
+
+# Tell Django to use S3 for "media" files (user images)
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+# Public URL to access the photos
+MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
