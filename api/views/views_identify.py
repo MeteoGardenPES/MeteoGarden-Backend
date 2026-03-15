@@ -8,7 +8,9 @@ from rest_framework.decorators import api_view, parser_classes, permission_class
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from ..models import Image, Plant, User, GrowthState
+
+from ..models import GrowthState, Image, Plant, User
+from .views_info import importPlant
 
 PLANTNET_URL = "https://my-api.plantnet.org/v2/identify/all"
 ALLOWED_ORGANS = {"leaf", "flower"}
@@ -17,7 +19,7 @@ ALLOWED_ORGANS = {"leaf", "flower"}
 @api_view(["POST"])
 @permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser])
-def identifyAndSavePlant(request):
+def identifyPlant(request):
 
     username = request.data.get("username")
     file_obj = request.FILES.get("image")
@@ -78,9 +80,8 @@ def identifyAndSavePlant(request):
             {"detail": "PlantNet response missing scientific name."}, status=422
         )
 
-
-    # obtenir la planta (si no existeix es crea), caldra una variable dient si es nova o no
-
+    importPlant(scientificName)
+    plant = Plant.objects.get(scientificName=scientificName)
 
     uploader = None
     if username:
@@ -115,9 +116,11 @@ def identifyAndSavePlant(request):
         status=201,
     )
 
+
 POLLINATIONS_URL = "https://gen.pollinations.ai/image"
 
-def createPlantImages(request, plant_id):
+
+def createPlantImages(plant_id):
     try:
         plant = Plant.objects.get(id=plant_id)
     except Plant.DoesNotExist:
@@ -154,9 +157,7 @@ def createPlantImages(request, plant_id):
         image_url = f"{POLLINATIONS_URL}/{encoded_prompt}?model=flux"
 
         response = requests.get(
-            image_url,
-            headers={"Authorization": f"Bearer {api_key}"},
-            timeout=60
+            image_url, headers={"Authorization": f"Bearer {api_key}"}, timeout=60
         )
 
         if response.status_code == 200:
