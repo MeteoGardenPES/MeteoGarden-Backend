@@ -1,20 +1,15 @@
 # from django.shortcuts import render
+import os
+import urllib
+
 import requests
-from django.conf import settings
+from django.core.files.base import ContentFile
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
-from .models import Image, Plant, User
-
-
-# Create your views here.
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def health(request):
-    return Response({"health status": "ok"})
-
+from django.utils.text import slugify
+from .models import Image, Plant, User, GrowthState
 
 PLANTNET_URL = "https://my-api.plantnet.org/v2/identify/all"
 ALLOWED_ORGANS = {"leaf", "flower"}
@@ -38,7 +33,7 @@ def identifyAndSavePlant(request):
             status=400,
         )
 
-    api_key = getattr(settings, "PLANTNET_API_KEY", None)
+    api_key = os.getenv("PLANTNET_API_KEY")
     if not api_key:
         return Response({"detail": "PLANTNET_API_KEY is not configured."}, status=500)
 
@@ -78,14 +73,14 @@ def identifyAndSavePlant(request):
     scientificName = species.get("scientificNameWithoutAuthor") or species.get(
         "scientificName"
     )
-    commonNames = species.get("commonNames") or []
 
     if not scientificName:
         return Response(
             {"detail": "PlantNet response missing scientific name."}, status=422
         )
 
-    common_name = commonNames[0] if commonNames else scientificName
+
+    # obtenir la planta (si no existeix es crea), caldra una variable dient si es nova o no
 
 
     uploader = None
@@ -120,3 +115,58 @@ def identifyAndSavePlant(request):
         },
         status=201,
     )
+
+POLLINATIONS_URL = "https://gen.pollinations.ai/image"
+
+def createPlantImages(request, plant_id):
+    try:
+        plant = Plant.objects.get(id=plant_id)
+    except Plant.DoesNotExist:
+        return {"error": "Plant not found"}
+
+    scientificName = plant.scientificName
+    safe_name = urllib.parse.quote(scientificName)
+
+    api_key = os.getenv("POLLINATIONS_API_KEY")
+
+    style = f"""
+        game-ready 2D farming game sprite of a {scientificName} plant,
+        recognizable real-world characteristics of {scientificName},
+        botanically distinguishable silhouette,
+        stem, leaves and flowers only,
+        only the plant visible,
+        no pot, no flower pot, no planter, no container,
+        no soil, no dirt, no ground, no base tile, no surface,
+        no shadow underneath, no table,
+        floating plant, isolated object cutout, sticker-like sprite,
+        clean cut edges,
+        transparent background, PNG with alpha channel,
+        centered composition,
+        bright vibrant colors,
+        soft cartoon shading,
+        no realistic photo, no background scene, no environment, no decoration,
+        no text, no watermark
+        """.strip()
+
+    for state_value, state_label in GrowthState.choices:
+
+        prompt = f"{safe_name} plant, {state_label} stage, {style}"
+        encoded_prompt = urllib.parse.quote(prompt)
+        image_url = f"{POLLINATIONS_URL}/{encoded_prompt}?model=flux"
+
+        response = requests.get(
+            image_url,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=60
+        )
+
+        if response.status_code == 200:
+            image_content = ContentFile(response.content)
+
+            new_image = Image(plant=plant)
+
+            filename = f"{safe_name}_{state_value}.png"
+            new_image.url.save(filename, image_content, save=True)
+
+    return None
+

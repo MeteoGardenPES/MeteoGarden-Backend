@@ -294,10 +294,19 @@ class AlbumEntry(models.Model):
             )
 
 
+def imageUploadPath(instance, filename):
+    sci = instance.plant.scientificName.replace(" ", "_").lower()
+    return f"plants/{sci}/{filename}"
+
+
 class Image(models.Model):
-    plant = models.ForeignKey(Plant, on_delete=models.CASCADE)
-    uploader = models.ForeignKey(User, on_delete=models.CASCADE)
-    url = models.URLField(primary_key=True)
+    plant = models.ForeignKey(Plant, on_delete=models.CASCADE, null=True, blank=True)
+    uploader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    url = models.ImageField(
+        upload_to=imageUploadPath,
+        width_field="width",
+        height_field="height",
+    )
     width = models.PositiveIntegerField()
     height = models.PositiveIntegerField()
 
