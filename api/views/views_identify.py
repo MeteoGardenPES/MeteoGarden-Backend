@@ -10,7 +10,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from ..models import GrowthState, Image, Plant, User
-from .views_info import importPlant
 
 PLANTNET_URL = "https://my-api.plantnet.org/v2/identify/all"
 ALLOWED_ORGANS = {"leaf", "flower"}
@@ -80,7 +79,7 @@ def identifyPlant(request):
             {"detail": "PlantNet response missing scientific name."}, status=422
         )
 
-    importPlant(scientificName)
+    requests.post("plants/info/", data={"scientificName": scientificName})
     plant = Plant.objects.get(scientificName=scientificName)
 
     uploader = None
@@ -93,7 +92,7 @@ def identifyPlant(request):
     img = Image.objects.create(
         uploader=uploader,
         url=file_obj,
-        plant=None,
+        plant=plant,
     )
 
     return Response(

@@ -13,5 +13,5 @@ urlpatterns = [
     path("weather/current/", current_weather),
     path("stations/", get_stations),
     path("plants/info/", importPlant),
-    path("plants/identify/", identifyPlant),
+    path("plants/identify/", identifyPlant, name="identifyPlant"),
 ]
