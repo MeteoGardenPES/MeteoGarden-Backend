@@ -56,6 +56,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("maxTemperature", models.FloatField()),
+                ("description", models.TextField(default=None)),
             ],
         ),
         migrations.CreateModel(
