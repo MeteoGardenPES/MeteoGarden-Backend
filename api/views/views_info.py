@@ -1,32 +1,28 @@
 # from django.shortcuts import render
+import os
+
+import requests
+from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-import os
-import requests
-from django.db import transaction
-from .models import Plant
 
-# Create your views here.
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def health(request):
-    return Response({"health status": "ok"})
+from ..models import Plant
 
 TEMPS_RANGES = [
-    (-51.1, -45.6),
-    (-45.6, -40),
-    (-40, -34.4),
-    (-34.4, -28.9),
-    (-28.9, -23.3),
-    (-23.3, -17.8),
-    (-17.8, -12.2),
-    (-12.2, -6.7),
-    (-6.7, -1.1),
-    (-1.1, 4.4),
-    (4.4, 10),
-    (10, 15.6),
-    (15.6, 21.1),
+    (-51.1, 20),
+    (-45.6, 22),
+    (-40, 24),
+    (-34.4, 25),
+    (-28.9, 26),
+    (-23.3, 28),
+    (-17.8, 30),
+    (-12.2, 33),
+    (-6.7, 36),
+    (-1.1, 40),
+    (4.4, 45),
+    (10, 50),
+    (15.6, 55),
 ]
 
 
@@ -78,7 +74,10 @@ def getPlantInfoFromAPI(scientific_name: str) -> dict | None:
     return response_details.json()
 
 
-def filterInfo(details: dict, lang: str) -> dict:
+def filterInfo(details: dict, lang: str) -> dict | None:
+    if details is None:
+        return None
+
     sci_list = details.get("scientific_name") or []
     sci = sci_list[0] if sci_list else None
 
@@ -89,7 +88,7 @@ def filterInfo(details: dict, lang: str) -> dict:
 
     info = {
         "scientificName": sci,
-        "commonName": details.get("common_name"),
+        "commonName": details.get("common_name").capitalize(),
         "family": details.get("family"),
         "canFlower": details.get("flowers"),
         "minTemperature": minTemperature,
@@ -98,6 +97,12 @@ def filterInfo(details: dict, lang: str) -> dict:
     }
 
     saveOrUpdatePlant(info)
+    info.update(
+        {
+            "commonName": translate(info["commonName"], lang),
+            "description": translate(description, lang),
+        }
+    )
     return info
 
 
@@ -116,12 +121,16 @@ def saveOrUpdatePlant(details: dict):
     )
 
 
+def getPlant(scientific_name: str) -> Plant | None:
+    return Plant.objects.filter(scientificName=scientific_name).first()
+
+
 def getInfoPlant(scientific_name: str, lang: str) -> dict | None:
-    if Plant.objects.filter(scientificName=scientific_name).exists():
-        plant = Plant.objects.get(scientificName=scientific_name)
+    plant = Plant.objects.filter(scientificName=scientific_name).first()
+    if plant:
         return {
             "scientificName": plant.scientificName,
-            "commonName": plant.commonName,
+            "commonName": translate(plant.commonName, lang).capitalize(),
             "family": plant.family,
             "canFlower": plant.canFlower,
             "minTemperature": plant.minTemperature,
