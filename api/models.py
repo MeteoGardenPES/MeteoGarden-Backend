@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -55,9 +56,8 @@ class Plant(models.Model):
         return self.scientificName
 
 
-class User(models.Model):
-    username = models.CharField(max_length=50, primary_key=True)  # RT.1
-    password = models.CharField(max_length=50)
+class User(AbstractUser):
+    username = models.CharField(primary_key=True)  # RT.1
     email = models.EmailField(unique=True)  # RT.14
     city = models.CharField(max_length=50)
     language = models.CharField(
