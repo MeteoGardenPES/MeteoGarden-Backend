@@ -8,27 +8,20 @@ from django.urls import path
 from .views import (
     current_weather,
     edit_profile,
+    garden_plants,
     get_profile,
     get_stations,
     getUserAlbum,
     health,
     identifyPlant,
     login,
-    register,
-)
-
-"""
-from django.contrib import admin
-"""
-
-from api.views.views_visualitzarJardi import (
     plant_status,
+    register,
+    user_gardens,
     user_products,
     user_seeds,
     water_plant,
 )
-
-from .views import current_weather, garden_plants, get_stations, user_gardens
 
 urlpatterns = [
     path("health/", health),
