@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from api.models import Garden, Pot, User, Inventory
+from api.models import Garden, Inventory, Pot, User
 
 
 def garden_plants(request, username, garden_name):
@@ -147,6 +147,7 @@ def water_plant(request, username, garden_name, pot_number):
 
     return JsonResponse(data, status=200)
 
+
 def user_seeds(request, username):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])
@@ -156,14 +157,12 @@ def user_seeds(request, username):
     inventory, _ = Inventory.objects.get_or_create(user=user)
 
     seeds_data = [
-        {
-            "scientificName": seed,
-            "amount": amount
-        }
+        {"scientificName": seed, "amount": amount}
         for seed, amount in inventory.seeds.items()
     ]
 
     return JsonResponse(seeds_data, safe=False)
+
 
 def user_products(request, username):
     if request.method != "GET":

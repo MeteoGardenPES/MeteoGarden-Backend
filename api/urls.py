@@ -5,7 +5,8 @@ URL configuration for api.
 # from django.contrib import admin
 from django.urls import path
 
-from api.views.views_visualitzarJardi import plant_status, water_plant, user_seeds, user_products
+from api.views.views_visualitzarJardi import (plant_status, user_products,
+                                              user_seeds, water_plant)
 
 from .views import current_weather, garden_plants, get_stations, user_gardens
 
