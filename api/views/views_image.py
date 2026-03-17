@@ -63,15 +63,21 @@ def createPlantImages(scientificName):
 @api_view(["GET"])
 def getUserAlbum(request):
 
-    username = request.data.get("username")
-    user = User.objects.get(username=username)
-    list_of_albums = AlbumEntry.objects.filter(user=user)
+    username = request.query_params.get("username")
+    if not username:
+        return Response({"username": "This query param is required."}, status=400)
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({"user": "User not found."}, status=404)
+
+    list_of_albums = AlbumEntry.objects.filter(user=user).select_related("plant")
 
     list_url = []
-
     for album in list_of_albums:
-        plant = album.plant
-        image = Image.objects.get(plant=plant)
-        list_url += image.url
+        image = Image.objects.filter(plant=album.plant).first()
+        if image and image.url:
+            list_url.append(image.url.url)
 
     return Response(list_url)
