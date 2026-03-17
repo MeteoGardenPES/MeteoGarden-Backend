@@ -10,7 +10,9 @@ from .views import (
     edit_profile,
     get_profile,
     get_stations,
+    getUserAlbum,
     health,
+    identifyPlant,
     login,
     register,
 )
@@ -28,4 +30,6 @@ urlpatterns = [
     path("edit_profile/", edit_profile),
     path("weather/current/", current_weather),
     path("stations/", get_stations),
+    path("plants/identify", identifyPlant, name="identifyPlant"),
+    path("album/", getUserAlbum),
 ]
