@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from ..models import Plant
+from .views_image import createPlantImages
 
 TEMPS_RANGES = [
     (-51.1, 20),
@@ -97,6 +98,7 @@ def filterInfo(details: dict, lang: str) -> dict | None:
     }
 
     saveOrUpdatePlant(info)
+
     info.update(
         {
             "commonName": translate(info["commonName"], lang),
@@ -119,6 +121,7 @@ def saveOrUpdatePlant(details: dict):
             "description": details.get("description"),
         },
     )
+    createPlantImages(details.get("scientificName"))
 
 
 def getPlant(scientific_name: str) -> Plant | None:

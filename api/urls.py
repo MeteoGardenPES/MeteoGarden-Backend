@@ -14,6 +14,7 @@ from .views import (
     getUserAlbum,
     health,
     identifyPlant,
+    importPlant,
     login,
     plant_status,
     register,
@@ -42,6 +43,7 @@ urlpatterns = [
     ),
     path("weather/current/", current_weather),
     path("stations/", get_stations),
+    path("plants/info/", importPlant),
     path("plants/identify", identifyPlant, name="identifyPlant"),
     path("album/", getUserAlbum),
     path(
