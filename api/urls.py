@@ -6,6 +6,7 @@ URL configuration for api.
 from django.urls import path
 
 from .views import (
+    collect_plant,
     current_weather,
     edit_profile,
     garden_plants,
@@ -58,5 +59,9 @@ urlpatterns = [
         "users/<str:username>/products/",
         user_products,
         name="user_products",
+    ),
+    path(
+        "users/<str:username>/gardens/<str:garden_name>/pots/<int:pot_number>/collect",
+        collect_plant,
     ),
 ]
