@@ -38,7 +38,7 @@ class LanguageType(models.TextChoices):
 class Plant(models.Model):
     scientificName = models.CharField(max_length=100, primary_key=True)  # RT.1
     commonName = models.CharField(max_length=100)
-    family = models.CharField(max_length=100)
+    family = models.CharField(max_length=100, null=True)
     canFlower = models.BooleanField(default=False)
     minTemperature = models.FloatField(validators=[MinValueValidator(0.0)])  # RT.6
     maxTemperature = models.FloatField()  # RT.6

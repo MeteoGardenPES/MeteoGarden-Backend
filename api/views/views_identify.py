@@ -1,15 +1,14 @@
 # from django.shortcuts import render
 import os
-import urllib
 
 import requests
-from django.core.files.base import ContentFile
-from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.decorators import (api_view, parser_classes,
+                                       permission_classes)
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from ..models import GrowthState, Image, Plant, User
+from ..models import Image, Plant, User
 from .views_info import getInfoPlant
 
 PLANTNET_URL = "https://my-api.plantnet.org/v2/identify/all"
@@ -116,55 +115,3 @@ def identifyPlant(request):
         },
         status=201,
     )
-
-
-POLLINATIONS_URL = "https://gen.pollinations.ai/image"
-
-
-def createPlantImages(scientificName):
-
-    safe_name = urllib.parse.quote(scientificName)
-    plant = Plant.objects.get(scientificName=scientificName)
-    if not plant:
-        return Response({"plant": "Plant not found."}, status=404)
-
-    api_key = os.getenv("POLLINATIONS_API_KEY")
-
-    style = f"""
-        game-ready 2D farming game sprite of a {scientificName} plant,
-        recognizable real-world characteristics of {scientificName},
-        botanically distinguishable silhouette,
-        stem, leaves and flowers only,
-        only the plant visible,
-        no pot, no flower pot, no planter, no container,
-        no soil, no dirt, no ground, no base tile, no surface,
-        no shadow underneath, no table,
-        floating plant, isolated object cutout, sticker-like sprite,
-        clean cut edges,
-        transparent background, PNG with alpha channel,
-        centered composition,
-        bright vibrant colors,
-        soft cartoon shading,
-        no realistic photo, no background scene, no environment, no decoration,
-        no text, no watermark
-        """.strip()
-
-    for state_value, state_label in GrowthState.choices:
-
-        prompt = f"{safe_name} plant, {state_label} stage, {style}"
-        encoded_prompt = urllib.parse.quote(prompt)
-        image_url = f"{POLLINATIONS_URL}/{encoded_prompt}?model=flux"
-
-        response = requests.get(
-            image_url, headers={"Authorization": f"Bearer {api_key}"}, timeout=60
-        )
-
-        if response.status_code == 200:
-            image_content = ContentFile(response.content)
-
-            new_image = Image(plant=plant)
-
-            filename = f"{safe_name}_{state_value}.png"
-            new_image.url.save(filename, image_content, save=True)
-
-    return None
