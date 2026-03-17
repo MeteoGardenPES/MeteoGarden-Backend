@@ -7,4 +7,12 @@ from .views_profile_operations import (  # noqa: F401
     login,
     register,
 )
+from .views_visualitzarJardi import (  # noqa: F401
+    garden_plants,
+    plant_status,
+    user_gardens,
+    user_products,
+    user_seeds,
+    water_plant,
+)
 from .views_xema import current_weather, get_stations  # noqa: F401
