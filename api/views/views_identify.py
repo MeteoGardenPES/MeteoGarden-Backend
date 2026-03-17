@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from ..models import GrowthState, Image, Plant, User
+from .views_info import getInfoPlant
 
 PLANTNET_URL = "https://my-api.plantnet.org/v2/identify/all"
 ALLOWED_ORGANS = {"leaf", "flower"}
@@ -23,6 +24,9 @@ def identifyPlant(request):
     username = request.data.get("username")
     file_obj = request.FILES.get("image")
     organ = request.data.get("organs", "leaf")
+
+    if not username:
+        return Response({"error": "Username required"}, status=400)
 
     if not file_obj:
         return Response({"image": "Image file is required."}, status=400)
@@ -79,15 +83,13 @@ def identifyPlant(request):
             {"detail": "PlantNet response missing scientific name."}, status=422
         )
 
-    requests.post("plants/info/", data={"scientificName": scientificName})
-    plant = Plant.objects.get(scientificName=scientificName)
+    try:
+        uploader = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({"username": "User not found."}, status=404)
 
-    uploader = None
-    if username:
-        try:
-            uploader = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return Response({"username": "User not found."}, status=404)
+    getInfoPlant(scientificName, uploader.language)
+    plant = Plant.objects.get(scientificName=scientificName)
 
     img = Image.objects.create(
         uploader=uploader,
@@ -119,14 +121,12 @@ def identifyPlant(request):
 POLLINATIONS_URL = "https://gen.pollinations.ai/image"
 
 
-def createPlantImages(plant_id):
-    try:
-        plant = Plant.objects.get(id=plant_id)
-    except Plant.DoesNotExist:
-        return {"error": "Plant not found"}
+def createPlantImages(scientificName):
 
-    scientificName = plant.scientificName
     safe_name = urllib.parse.quote(scientificName)
+    plant = Plant.objects.get(scientificName=scientificName)
+    if not plant:
+        return Response({"plant": "Plant not found."}, status=404)
 
     api_key = os.getenv("POLLINATIONS_API_KEY")
 

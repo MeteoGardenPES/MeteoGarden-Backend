@@ -1,19 +1,17 @@
-from . import settings as base
+from .settings import *  # noqa: F403
 
 DEBUG = False
-
-BASE_DIR = base.BASE_DIR
 
 SECRET_KEY = "test-secret-key"
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "test.sqlite3",
+        "NAME": BASE_DIR / "test.sqlite3",  # noqa: F405
     }
 }
 
-MEDIA_ROOT = BASE_DIR / "test_media"
+MEDIA_ROOT = BASE_DIR / "test_media"  # noqa: F405
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 PASSWORD_HASHERS = [

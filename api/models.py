@@ -308,8 +308,8 @@ class Image(models.Model):
         width_field="width",
         height_field="height",
     )
-    width = models.PositiveIntegerField()
-    height = models.PositiveIntegerField()
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"Image of {self.plant.scientificName} by " f"{self.uploader.username}"
