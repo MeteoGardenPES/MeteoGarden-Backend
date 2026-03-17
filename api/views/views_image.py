@@ -3,9 +3,10 @@ import urllib
 
 import requests
 from django.core.files.base import ContentFile
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from ..models import GrowthState, Image, Plant
+from ..models import AlbumEntry, GrowthState, Image, Plant, User
 
 POLLINATIONS_URL = "https://gen.pollinations.ai/image"
 
@@ -18,6 +19,7 @@ def createPlantImages(scientificName):
         return Response({"plant": "Plant not found."}, status=404)
 
     api_key = os.getenv("POLLINATION_API_KEY")
+
     style = f"""
         game-ready 2D farming game sprite of a {scientificName} plant,
         recognizable real-world characteristics of {scientificName},
@@ -46,6 +48,7 @@ def createPlantImages(scientificName):
         response = requests.get(
             image_url, headers={"Authorization": f"Bearer {api_key}"}, timeout=60
         )
+
         if response.status_code == 200:
             image_content = ContentFile(response.content)
 
@@ -55,3 +58,20 @@ def createPlantImages(scientificName):
             new_image.url.save(filename, image_content, save=True)
 
     return None
+
+
+@api_view(["GET"])
+def getUserAlbum(request):
+
+    username = request.data.get("username")
+    user = User.objects.get(username=username)
+    list_of_albums = AlbumEntry.objects.filter(user=user)
+
+    list_url = []
+
+    for album in list_of_albums:
+        plant = album.plant
+        image = Image.objects.get(plant=plant)
+        list_url += image.url
+
+    return Response(list_url)
