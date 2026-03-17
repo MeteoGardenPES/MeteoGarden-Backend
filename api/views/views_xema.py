@@ -1,4 +1,5 @@
 import os
+import requests
 
 from dotenv import load_dotenv
 from rest_framework.decorators import api_view, permission_classes
