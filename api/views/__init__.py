@@ -1,3 +1,10 @@
+from .views import health  # noqa: F401
+from .views_profile_operations import (  # noqa: F401
+    edit_profile,
+    get_profile,
+    login,
+    register,
+)
 from .views_visualitzarJardi import (
     garden_plants,
     plant_status,
