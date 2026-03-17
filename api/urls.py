@@ -5,8 +5,15 @@ URL configuration for api.
 # from django.contrib import admin
 from django.urls import path
 
-from .views import current_weather, get_stations, health
-from .views import edit_profile, get_profile, health, login, register
+from .views import (
+    current_weather,
+    edit_profile,
+    get_profile,
+    get_stations,
+    health,
+    login,
+    register,
+)
 
 """
 from django.contrib import admin
