@@ -25,7 +25,7 @@ def register(request):
         city=request.data["city"],
         language=request.data["language"],
         numPlantsCollected=0,
-        codiEstacio=request.data["codiEstacio"]
+        codiEstacio=request.data["codiEstacio"],
     )
     token, created = Token.objects.get_or_create(user=user)
     return Response({"token": token.key, "message": "User created"})
