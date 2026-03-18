@@ -25,6 +25,7 @@ def register(request):
         city=request.data["city"],
         language=request.data["language"],
         numPlantsCollected=0,
+        codiEstacio=request.data["codiEstacio"]
     )
     token, created = Token.objects.get_or_create(user=user)
     return Response({"token": token.key, "message": "User created"})
@@ -55,7 +56,7 @@ def get_profile(request):
             "username": user.username,
             "email": user.email,
             "city": user.city,
-            "codi_estacio": user.codi_estacio,
+            "codiEstacio": user.codiEstacio,
             "language": user.language,
             "lastEntry": user.lastEntry,
             "numPlantsCollected": user.numPlantsCollected,
@@ -73,6 +74,7 @@ def edit_profile(request):
     user.city = data.get("city", user.city)
     user.language = data.get("language", user.language)
     user.numPlantsCollected = data.get("numPlantsCollected", user.numPlantsCollected)
+    user.codiEstacio = data.get("codiEstacio", user.codiEstacio)
     if "password" in data:
         user.set_password(data["password"])
     try:
