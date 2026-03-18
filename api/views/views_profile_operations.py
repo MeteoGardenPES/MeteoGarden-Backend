@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from ..models import Garden, Inventory, User
+from ..models import Garden, Inventory, Pot, User
 
 
 # Create your views here.
@@ -37,8 +37,14 @@ def register(request):
     # Create the inventory
     Inventory.objects.create(user=user)
 
-    # Create the garden
-    Garden.objects.create(user=user, name=garden_name)
+    # Create the garden and the pots
+    garden = Garden.objects.create(user=user, name=garden_name)
+    pots_to_create = []
+    for i in range(1, 17):  # To create 16 pots (from 1 to 16)
+        pots_to_create.append(Pot(garden=garden, number=i))
+
+    # bulk_create is faster than create a single object
+    Pot.objects.bulk_create(pots_to_create)
 
     token, created = Token.objects.get_or_create(user=user)
     return Response(
