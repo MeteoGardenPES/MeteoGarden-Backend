@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from ..models import User
+from ..models import Inventory, User
 
 
 # Create your views here.
@@ -27,6 +27,10 @@ def register(request):
         numPlantsCollected=0,
         codiEstacio=request.data["codiEstacio"],
     )
+
+    # We create the inventory
+    Inventory.objects.create(user=user)
+
     token, created = Token.objects.get_or_create(user=user)
     return Response({"token": token.key, "message": "User created"})
 
@@ -51,6 +55,7 @@ def login(request):
 @permission_classes([IsAuthenticated])
 def get_profile(request):
     user = request.user
+    inventory = Inventory.objects.get(user=user)
     return Response(
         {
             "username": user.username,
@@ -60,6 +65,7 @@ def get_profile(request):
             "language": user.language,
             "lastEntry": user.lastEntry,
             "numPlantsCollected": user.numPlantsCollected,
+            "numCoins": inventory.coins,
         }
     )
 
