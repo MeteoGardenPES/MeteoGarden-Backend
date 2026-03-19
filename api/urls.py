@@ -16,6 +16,7 @@ from .views import (
     identifyPlant,
     importPlant,
     login,
+    plant_seed,
     plant_status,
     register,
     user_gardens,
@@ -60,5 +61,10 @@ urlpatterns = [
         "users/<str:username>/products/",
         user_products,
         name="user_products",
+    ),
+    path(
+        "users/<str:username>/gardens/<str:garden_name>/pots/<int:pot_number>/planting/",
+        plant_seed,
+        name="plant_seed",
     ),
 ]
