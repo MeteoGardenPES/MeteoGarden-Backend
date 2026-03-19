@@ -98,13 +98,14 @@ def filterInfo(details: dict, lang: str) -> dict | None:
     }
 
     saveOrUpdatePlant(info)
+    if lang != "en" or lang != "EN" :
+        info.update(
+            {
+                "commonName": translate(info["commonName"], lang),
+                "description": translate(description, lang),
+            }
+        )
 
-    info.update(
-        {
-            "commonName": translate(info["commonName"], lang),
-            "description": translate(description, lang),
-        }
-    )
     return info
 
 
@@ -131,14 +132,21 @@ def getPlant(scientific_name: str) -> Plant | None:
 def getInfoPlant(scientific_name: str, lang: str) -> dict | None:
     plant = Plant.objects.filter(scientificName=scientific_name).first()
     if plant:
+        createPlantImages(scientific_name)
+        desc = plant.description
+        commonName = plant.commonName
+        if lang != 'en':
+            desc = translate(desc, lang)
+            commonName = translate(commonName, lang)
+
         return {
             "scientificName": plant.scientificName,
-            "commonName": translate(plant.commonName, lang).capitalize(),
+            "commonName": commonName.capitalize(),
             "family": plant.family,
             "canFlower": plant.canFlower,
             "minTemperature": plant.minTemperature,
             "maxTemperature": plant.maxTemperature,
-            "description": translate(plant.description, lang),
+            "description": desc,
         }
     else:
         details = getPlantInfoFromAPI(scientific_name)
