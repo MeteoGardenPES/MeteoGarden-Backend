@@ -6,6 +6,7 @@ URL configuration for api.
 from django.urls import path
 
 from .views import (
+    collect_plant,
     current_weather,
     edit_profile,
     garden_plants,
@@ -23,7 +24,6 @@ from .views import (
     user_products,
     user_seeds,
     water_plant,
-    collect_plant,
 )
 
 urlpatterns = [
