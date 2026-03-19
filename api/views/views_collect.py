@@ -9,20 +9,17 @@ from api.models import Garden, GrowthState, Inventory, Plant, PlantInGarden, Pot
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def collect_plant(request):
+def collect_plant(request, username, garden_name, pot_number):
 
-    username = request.data.get("username")
-    garden_name = request.data.get("garden")
-    pot_num = request.data.get("pot")
     scientificName = request.data.get("plant")
 
-    if not all([username, garden_name, pot_num, scientificName]):
+    if not all([username, garden_name, pot_number, scientificName]):
         return Response({"error": "Missing required fields"}, status=400)
 
     try:
         user = User.objects.get(username=username)
         garden = Garden.objects.get(user=user, name=garden_name)
-        pot = Pot.objects.get(garden=garden, number=pot_num)
+        pot = Pot.objects.get(garden=garden, number=pot_number)
         plant = Plant.objects.get(scientificName=scientificName)
         plantGarden = PlantInGarden.objects.get(pot=pot, plant=plant)
 
