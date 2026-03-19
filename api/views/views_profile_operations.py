@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from ..models import User
+from ..models import Garden, Inventory, Pot, User
 
 
 # Create your views here.
@@ -18,6 +18,12 @@ def health(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
+
+    # Check if the garden name isn't empty
+    garden_name = request.data.get("gardenName")
+    if not garden_name:
+        return Response({"error": "Garden name is mandatory"}, status=400)
+
     user = User.objects.create_user(
         username=request.data["username"],
         password=request.data["password"],
@@ -25,9 +31,25 @@ def register(request):
         city=request.data["city"],
         language=request.data["language"],
         numPlantsCollected=0,
+        stationCode=request.data["stationCode"],
     )
+
+    # Create the inventory
+    Inventory.objects.create(user=user)
+
+    # Create the garden and the pots
+    garden = Garden.objects.create(user=user, name=garden_name)
+    pots_to_create = []
+    for i in range(1, 17):  # To create 16 pots (from 1 to 16)
+        pots_to_create.append(Pot(garden=garden, number=i))
+
+    # bulk_create is faster than create a single object
+    Pot.objects.bulk_create(pots_to_create)
+
     token, created = Token.objects.get_or_create(user=user)
-    return Response({"token": token.key, "message": "User created"})
+    return Response(
+        {"token": token.key, "message": "User, garden and inventory created"}
+    )
 
 
 # Login view
@@ -42,7 +64,7 @@ def login(request):
         return Response(
             {"token": token.key, "username": user.username, "message": "Login correcte"}
         )
-    return Response({"error": "Credencials incorrectes"}, status=400)
+    return Response({"error": "Wrong credentials"}, status=400)
 
 
 # View profile
@@ -50,15 +72,17 @@ def login(request):
 @permission_classes([IsAuthenticated])
 def get_profile(request):
     user = request.user
+    inventory = Inventory.objects.get(user=user)
     return Response(
         {
             "username": user.username,
             "email": user.email,
             "city": user.city,
-            "codi_estacio": user.codi_estacio,
+            "stationCode": user.stationCode,
             "language": user.language,
             "lastEntry": user.lastEntry,
             "numPlantsCollected": user.numPlantsCollected,
+            "numCoins": inventory.coins,
         }
     )
 
@@ -73,10 +97,11 @@ def edit_profile(request):
     user.city = data.get("city", user.city)
     user.language = data.get("language", user.language)
     user.numPlantsCollected = data.get("numPlantsCollected", user.numPlantsCollected)
+    user.stationCode = data.get("stationCode", user.stationCode)
     if "password" in data:
         user.set_password(data["password"])
     try:
         user.save()
-        return Response({"message": "Perfil actualitzat"})
+        return Response({"message": "Actualized profile"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)

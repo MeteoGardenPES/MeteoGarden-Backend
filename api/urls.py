@@ -15,7 +15,9 @@ from .views import (
     getUserAlbum,
     health,
     identifyPlant,
+    importPlant,
     login,
+    plant_seed,
     plant_status,
     register,
     user_gardens,
@@ -63,5 +65,10 @@ urlpatterns = [
     path(
         "users/<str:username>/gardens/<str:garden_name>/pots/<int:pot_number>/collect",
         collect_plant,
+    ),
+    path(
+        "users/<str:username>/gardens/<str:garden_name>/pots/<int:pot_number>/planting/",
+        plant_seed,
+        name="plant_seed",
     ),
 ]
