@@ -39,10 +39,11 @@ class LanguageType(models.TextChoices):
 class Plant(models.Model):
     scientificName = models.CharField(max_length=100, primary_key=True)  # RT.1
     commonName = models.CharField(max_length=100)
-    family = models.CharField(max_length=100)
+    family = models.CharField(max_length=100, null=True)
     canFlower = models.BooleanField(default=False)
     minTemperature = models.FloatField(validators=[MinValueValidator(0.0)])  # RT.6
     maxTemperature = models.FloatField()  # RT.6
+    description = models.TextField(null=True)
 
     def clean(self):
         if self.minTemperature >= self.maxTemperature:
@@ -65,6 +66,7 @@ class User(AbstractUser):
     )
     lastEntry = models.DateTimeField(auto_now=True)
     numPlantsCollected = models.PositiveIntegerField(default=0)
+    stationCode = models.CharField(max_length=4)
 
     @property
     def numPlantsUnlocked(self):
@@ -294,12 +296,21 @@ class AlbumEntry(models.Model):
             )
 
 
+def imageUploadPath(instance, filename):
+    sci = instance.plant.scientificName.replace(" ", "_").lower()
+    return f"plants/{sci}/{filename}"
+
+
 class Image(models.Model):
-    plant = models.ForeignKey(Plant, on_delete=models.CASCADE)
-    uploader = models.ForeignKey(User, on_delete=models.CASCADE)
-    url = models.URLField(primary_key=True)
-    width = models.PositiveIntegerField()
-    height = models.PositiveIntegerField()
+    plant = models.ForeignKey(Plant, on_delete=models.CASCADE, null=True, blank=True)
+    uploader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    url = models.ImageField(
+        upload_to=imageUploadPath,
+        width_field="width",
+        height_field="height",
+    )
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"Image of {self.plant.scientificName} by " f"{self.uploader.username}"
