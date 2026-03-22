@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.http import HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -128,9 +130,27 @@ def water_plant(request, username, garden_name, pot_number):
             status=404,
         )
 
-    planting.waterLevel = 100.0
+    now = timezone.now()
+
+    if now - planting.lastWateredAt < timedelta(hours=10):
+        remaining = timedelta(hours=10) - (now - planting.lastWateredAt)
+        total_seconds = int(remaining.total_seconds())
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+
+        return JsonResponse(
+            {
+                "error": "Plant was watered recently.",
+                "message": (
+                    f"You must wait {hours}h {minutes}m before watering again."
+                ),
+            },
+            status=400,
+        )
+
+    planting.waterLevel = min(100.0, planting.waterLevel + 50.0)
     planting.healthLevel = min(100.0, planting.healthLevel + 5.0)
-    planting.lastWateredAt = timezone.now()
+    planting.lastWateredAt = now
     planting.save()
 
     data = {
