@@ -391,3 +391,8 @@ class Shop(models.Model):
         elif item_type == "product" and name in self.products:
             del self.products[name]
         self.save()
+
+    def save(self, *args, **kwargs):
+        if not self.pk and Shop.objects.exists():
+            raise Exception("Shop already exists.")
+        return super().save(*args, **kwargs)
