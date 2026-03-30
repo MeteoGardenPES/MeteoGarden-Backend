@@ -9,6 +9,8 @@ from .views_profile_operations import (  # noqa: F401
     get_profile,
     login,
     register,
+    google_register,
+    google_verify,
 )
 from .views_visualitzarJardi import (  # noqa: F401
     garden_plants,

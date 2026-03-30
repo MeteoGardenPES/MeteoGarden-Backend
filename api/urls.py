@@ -11,6 +11,8 @@ from .views import (
     edit_profile,
     garden_plants,
     get_profile,
+    google_verify,
+    google_register,
     get_stations,
     getUserAlbum,
     health,
@@ -32,6 +34,8 @@ urlpatterns = [
     path("login/", login),
     path("get_profile/", get_profile),
     path("edit_profile/", edit_profile),
+    path("auth/google/verify", google_verify),
+    path("auth/google/register", google_register),
     path("users/<str:username>/gardens/", user_gardens, name="user_gardens"),
     path(
         "users/<str:username>/gardens/<str:garden_name>/plants/",
